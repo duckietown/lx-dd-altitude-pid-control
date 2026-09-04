@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>pid_controller</name>
+  <version>0.0.1</version>
+  <description>DD24 altitude PID controller node (MAVROS2 / PX4 OFFBOARD mode)</description>
+  <maintainer email="davide.iafrate@duckietown.com">Duckietown</maintainer>
+  <license>None</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>mavros_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
