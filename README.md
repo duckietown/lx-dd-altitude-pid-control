@@ -2,15 +2,33 @@
 
 `Software: ente`; `Hardware: DD24-B`
 
-This Learning Experience teaches you how to design, implement, and tune a **PID altitude controller** for the **Duckiedrone DD24**, which runs **PX4** as its flight controller and communicates with ROS2 via **MAVROS2**.
+This Learning Experience contains activities on how to design, implement, and tune a **PID controller** for altitude control of a **Duckiedrone** (model DD24-B), which runs **PX4** as its flight controller and communicates with ROS2 on a companion Raspberry Pi 4 via **MAVROS2**.
 
-## What You Will Learn
+## General instructions
 
-- Discrete-time PID control theory (proportional, integral, derivative terms)
-- How PX4's OFFBOARD mode works and why the heartbeat rate matters
-- How the `setpoint_attitude` MAVROS2 plugin lets a companion computer command normalized thrust and attitude
-- How to tune PID gains systematically using the Ziegler–Nichols method
-- How to transfer a simulation-tuned controller to real hardware
+The general instructions on how to run this and other Duckietown learning experiences (LXs) is available on the Duckietown Manual: [](https://docs.duckietown.com/ente/opmanual-dd24/50-learning-experiences/supported-lxs/pid-altitude-control.html). 
+
+## Intended Learning Outcomes
+
+Through this learning experience, you will learn:
+
+- Discrete-time PID (proportional, integral, derivative) control theory
+- A time-honored PID coefficients tuning strategy: the Ziegler–Nichols method
+- Implementation details such as how PX4's OFFBOARD mode works and why the heartbeat rate matters
+- How the setpoint_attitude MAVROS2 plugin lets a companion computer command normalized thrust and attitude
+- How to transfer a simulation-tuned controller to physical hardware
+
+## Requirements
+
+This LX runs both on virtual and on physical Duckiedrones. 
+
+### Software Requirements
+
+- A computer with a working [Duckietown Shell installation](https://docs.duckietown.com/ente/opmanual-dd24/10-duckiedrone-preliminaries/initial-setup.html#required-software-and-accounts).
+
+### Hardware Requirements (Notebook 4)
+
+- Duckietown [Duckiedrone](https://get.duckietown.com/products/autonomous-raspberrypi-quadcopter-duckiedrone-dd24?variant=43227749023919) with PX4 firmware (model DD24-B)
 
 ## Notebooks
 
@@ -29,12 +47,3 @@ In `packages/solution/solution/pid_class.py` you implement a `PID` class with:
 
 - `step(err, dt) → float` — returns a **normalized thrust command** in [0.0, 1.0]
 - `reset()` — resets integral and derivative state
-
-The `K` parameter is the hover thrust offset (typically ~0.44 for the physical Duckiedrone).
-
-## Hardware Requirements (Notebook 4)
-
-- Duckiedrone DD24 with PX4 firmware
-- MAVROS2 running on the companion computer
-- Bottom rangefinder (defaults to `/<robot>/bottom_tof_driver_node/range`; override via the `range_topic` ROS2 parameter)
-- RC transmitter for safety override
