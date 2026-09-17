@@ -19,7 +19,7 @@ class TestPIDOutput:
         self.thrust_lower_limit = 0.0
         self.PID = PID
 
-    def simulate(self, drag_coeff=0, latency=0, noise=0):
+    def simulate(self, latency=0, noise=0):
         pid_gains = load_gains(self.gains_path)
 
         my_pid_instance = self.PID(
@@ -32,7 +32,6 @@ class TestPIDOutput:
         sim = VerticalDrone(
             pid=my_pid_instance,
             step_size=10,
-            drag_coeff=drag_coeff,
             latency=latency,
             sensor_noise=noise,
         )
