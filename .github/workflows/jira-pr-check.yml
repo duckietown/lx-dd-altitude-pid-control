@@ -20,6 +20,11 @@ jobs:
           echo "📌 PR Title:  $TITLE"
           echo "📌 Branch:    $BRANCH"
 
+          if [ "$BRANCH" = "sync/upstream-ente" ]; then
+            echo "✅ Automated upstream sync branch, Jira key not required."
+            exit 0
+          fi
+
           TITLE_OK=$(echo "$TITLE" | grep -E "$JIRA_PATTERN" || true)
           BRANCH_OK=$(echo "$BRANCH" | grep -E "$JIRA_PATTERN" || true)
 
