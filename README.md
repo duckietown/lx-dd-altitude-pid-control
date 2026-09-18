@@ -36,8 +36,8 @@ Work through the notebooks **in order**:
 
 | # | Notebook | Description |
 |---|----------|-------------|
-| 1 | `1-general_overview.ipynb` | PID control theory and tuning concepts |
-| 2 | `2-drone_pids_overview.ipynb` | DD24 / PX4 / MAVROS2 architecture |
+| 1 | `1-PID_control_overview.ipynb` | PID control theory and tuning concepts |
+| 2 | `2-flight_control_architecture_overview.ipynb` | DD24 / PX4 / MAVROS2 architecture |
 | 3 | `3-altitude_pid_activity.ipynb` | Implement and tune PID in simulation |
 | 4 | `4-hands-on-altitude-tuning.ipynb` | Deploy and tune on real DD24 hardware |
 
