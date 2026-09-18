@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 env:
   UPSTREAM_REPO: duckietown/lx-dd-altitude-pid-control
@@ -37,9 +37,11 @@ jobs:
           git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
           git fetch upstream "${UPSTREAM_BRANCH}"
 
-      - name: Push the sync branch and open or update the sync issue
+      - name: Push the sync branch and open the sync pull request or issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # without this, gh targets the "upstream" remote, i.e. the public LX
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -63,13 +65,9 @@ jobs:
           TITLE="chore: sync solutions with ${UPSTREAM_REPO}@${UPSTREAM_BRANCH}"
           COMMITS=$(git log --format='- %h %s' "origin/ente..${UPSTREAM_SHA}")
 
-          gh label create "${SYNC_LABEL}" --color 0E8A16 --description "Public LX changed, sync PR needed" --force
-
-          if [ -z "${ISSUE}" ]; then
-            ISSUE=$(gh issue create --title "Public LX changed, sync PR needed" --label "${SYNC_LABEL}" --body "Opening..." | grep -o '[0-9]*$')
-            NEW_ISSUE=1
-          else
-            NEW_ISSUE=0
+          if [ -n "${PR_URL}" ]; then
+            echo "sync pull request ${PR_URL} is already open, it now points at ${UPSTREAM_SHA}"
+            exit 0
           fi
 
           {
@@ -85,22 +83,40 @@ jobs:
             echo "reading the diff."
             echo
             echo "Merge with **Create a merge commit**, never squash or rebase."
+          } > "${RUNNER_TEMP}/pr-body.md"
+
+          if PR_URL=$(gh pr create --base ente --head "${SYNC_BRANCH}" --title "${TITLE}" --body-file "${RUNNER_TEMP}/pr-body.md"); then
+            echo "opened ${PR_URL}"
+            gh pr comment "${PR_URL}" --body "${MENTION} the public LX changed, please review and merge this sync."
+            if [ -n "${ISSUE}" ]; then
+              gh issue close "${ISSUE}" --comment "Sync pull request opened: ${PR_URL}"
+            fi
+            exit 0
+          fi
+          echo "could not open the pull request, falling back to an issue"
+
+          gh label create "${SYNC_LABEL}" --color 0E8A16 --description "Public LX changed, sync PR needed" --force
+
+          if [ -z "${ISSUE}" ]; then
+            ISSUE=$(gh issue create --title "Public LX changed, sync PR needed" --label "${SYNC_LABEL}" --body "Opening..." | grep -o '[0-9]*$')
+            NEW_ISSUE=1
+          else
+            NEW_ISSUE=0
+          fi
+
+          {
             echo
             echo "Closes #${ISSUE}"
-          } > "${RUNNER_TEMP}/pr-body.md"
+          } >> "${RUNNER_TEMP}/pr-body.md"
 
           {
             echo "${MENTION} \`${UPSTREAM_REPO}@${UPSTREAM_BRANCH}\` is now at \`${SHORT_SHA}\`. Commits not yet in this repository:"
             echo
             echo "${COMMITS}"
             echo
-            if [ -n "${PR_URL}" ]; then
-              echo "The sync pull request is already open and now includes these commits: ${PR_URL}"
-            else
-              Q_TITLE=$(printf '%s' "${TITLE}" | jq -sRr @uri)
-              Q_BODY=$(jq -sRr @uri < "${RUNNER_TEMP}/pr-body.md")
-              echo "**[Create the sync pull request](https://github.com/${GITHUB_REPOSITORY}/compare/ente...${SYNC_BRANCH}?expand=1&title=${Q_TITLE}&body=${Q_BODY})**"
-            fi
+            Q_TITLE=$(printf '%s' "${TITLE}" | jq -sRr @uri)
+            Q_BODY=$(jq -sRr @uri < "${RUNNER_TEMP}/pr-body.md")
+            echo "**[Create the sync pull request](https://github.com/${GITHUB_REPOSITORY}/compare/ente...${SYNC_BRANCH}?expand=1&title=${Q_TITLE}&body=${Q_BODY})**"
             echo
             echo "Merge it with **Create a merge commit**. This issue closes once the sync is merged."
           } > "${RUNNER_TEMP}/issue-body.md"
